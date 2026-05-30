@@ -10,10 +10,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lordradeez.entities.LoginAuditLog;
 import com.lordradeez.entities.User;
+import com.lordradeez.repositories.LoginAuditLogRepository;
 import com.lordradeez.services.JwtUtil;
 import com.lordradeez.services.LoginResult;
 import com.lordradeez.services.UserService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * REST API Controller — stateless, JWT-based alternative to the session-based MVC controller.
@@ -32,6 +36,9 @@ public class ApiController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private LoginAuditLogRepository auditRepo;
 
     /**
      * Register a new user.
@@ -106,5 +113,14 @@ public class ApiController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("status", "error", "message", "OTP is invalid or has expired."));
         }
+    }
+
+    /**
+     * Retrieve audit logs for a specific email.
+     * GET /api/audit-logs/{email}
+     */
+    @GetMapping("/audit-logs/{email}")
+    public ResponseEntity<List<LoginAuditLog>> getAuditLogs(@PathVariable String email) {
+        return ResponseEntity.ok(auditRepo.findByEmailOrderByTimestampDesc(email));
     }
 }

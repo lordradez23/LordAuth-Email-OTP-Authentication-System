@@ -11,9 +11,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.lordradeez.entities.LoginAuditLog;
 import com.lordradeez.entities.PasswordResetToken;
 import com.lordradeez.entities.User;
 import com.lordradeez.entities.UserOtp;
+import com.lordradeez.repositories.LoginAuditLogRepository;
 import com.lordradeez.repositories.PasswordResetTokenRepository;
 import com.lordradeez.repositories.UserOTPRepository;
 import com.lordradeez.repositories.UserRepository;
@@ -38,6 +40,9 @@ public class UserService {
     PasswordResetTokenRepository resetTokenRepo;
 
     @Autowired
+    LoginAuditLogRepository auditRepo;
+
+    @Autowired
     JavaMailSender mailSender;
 
     // ─── Registration ─────────────────────────────────────────────
@@ -52,10 +57,16 @@ public class UserService {
     // ─── Login + OTP Generation ─────────────────────────────────────────
     public LoginResult loginAndGenerateOTP(String emailId, String password) {
         User user = userRepo.findByEmailId(emailId);
-        if (user == null) return LoginResult.INVALID_CREDENTIALS;
+        if (user == null) {
+            auditRepo.save(new LoginAuditLog(emailId, null, LoginAuditLog.Outcome.FAIL));
+            return LoginResult.INVALID_CREDENTIALS;
+        }
 
         // ─ Check lockout ───────────────────────────────────────
-        if (user.isLocked()) return LoginResult.ACCOUNT_LOCKED;
+        if (user.isLocked()) {
+            auditRepo.save(new LoginAuditLog(emailId, null, LoginAuditLog.Outcome.LOCKED));
+            return LoginResult.ACCOUNT_LOCKED;
+        }
 
         // ─ Wrong password ────────────────────────────────────
         if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -66,10 +77,12 @@ public class UserService {
                 user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCKOUT_MINUTES));
                 userRepo.save(user);
                 sendLockoutAlertEmail(user.getEmailId(), user.getName());
+                auditRepo.save(new LoginAuditLog(emailId, null, LoginAuditLog.Outcome.LOCKED));
                 return LoginResult.ACCOUNT_LOCKED;
             }
 
             userRepo.save(user);
+            auditRepo.save(new LoginAuditLog(emailId, null, LoginAuditLog.Outcome.FAIL));
             return LoginResult.INVALID_CREDENTIALS;
         }
 
@@ -131,6 +144,7 @@ public class UserService {
         if (user != null) {
             user.setLastLoginAt(LocalDateTime.now());
             userRepo.save(user);
+            auditRepo.save(new LoginAuditLog(user.getEmailId(), null, LoginAuditLog.Outcome.SUCCESS));
         }
         return user;
     }

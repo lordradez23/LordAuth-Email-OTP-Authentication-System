@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LordAuth | Error</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container" style="text-align:center;">
+
+        <div class="brand">
+            <div class="brand-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">⚠️</div>
+            <h1>LordAuth</h1>
+        </div>
+
+        <h2 class="section-title">Critical Error</h2>
+        <p class="subtitle">An unexpected error has occurred. Our security monitors have been notified.</p>
+
+        <div class="alert alert-danger" style="text-align:left;">
+            <span>🚫</span>
+            <div>
+                <strong>Error Type:</strong> <span th:text="${errorType}">Exception</span><br>
+                <strong>Message:</strong> <span th:text="${errorMessage}">Details sanitized for security.</span>
+            </div>
+        </div>
+
+        <p class="subtitle" style="font-size: 0.8rem;">
+            If you continue to experience this, please contact support or try again later.
+        </p>
+
+        <a href="/login">
+            <button class="btn-primary" style="margin-bottom:0.75rem;">Return to Safety</button>
+        </a>
+    </div>
+</body>
+</html>
