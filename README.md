@@ -20,11 +20,15 @@
 
 ## Celestial Features
 
-- **Identity Consecration**: Seamless user registration into the LordAuth registry.
-- **Anointed Access**: Secure login workflow integrated with OTP verification.
-- **Eternal Validation**: Real-time OTP delivery using celestial SMTP protocols.
-- **Sacred Expiring Tokens**: 1-minute OTP validity for supreme security.
-- **Divine Persistence**: Reliable state management using MySQL.
+- **Identity Consecration**: Seamless user registration with **BCrypt** password hashing.
+- **Anointed Access**: Secure login workflow integrated with OTP verification and JWT support.
+- **Eternal Validation**: Real-time OTP delivery via celestial SMTP protocols.
+- **Sacred Expiring Tokens**: 1-minute OTP validity with secure resend capabilities.
+- **Brute-Force Guardian**: Automatic **Account Lockout** after 5 failed attempts (15-min cooldown).
+- **Celestial Recovery**: Secure **Forgot Password** flow with UUID-based recovery tokens.
+- **Anointed Dashboard**: Premium authenticated dashboard showing session status and last login details.
+- **Sacred Audit Log**: Comprehensive recording of every login and lockout for divine oversight.
+- **Premium Glassmorphism UI**: A stunning, modern interface designed for a truly divine user experience.
 
 ---
 
