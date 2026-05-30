@@ -92,9 +92,9 @@ public class ApiController {
                     .body(Map.of("status", "error", "message", "otp and emailId are required."));
         }
 
-        boolean valid = userService.verifyOtp(otp);
-        if (valid) {
-            String token = jwtUtil.generateToken(emailId);
+        com.lordradeez.entities.User verified = userService.verifyOtp(otp);
+        if (verified != null) {
+            String token = jwtUtil.generateToken(verified.getEmailId());
             return ResponseEntity.ok(Map.of(
                     "status", "success",
                     "message", "Authentication successful.",
