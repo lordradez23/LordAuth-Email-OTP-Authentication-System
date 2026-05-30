@@ -75,6 +75,40 @@ public class UserController {
         return "loginfail";
     }
 
+    // ─── Forgot Password ──────────────────────────────────────────
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordPage() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam String emailId, Model model) {
+        boolean sent = userServ.initiatePasswordReset(emailId);
+        // Always show same message to avoid email enumeration
+        model.addAttribute("sent", true);
+        return "forgot-password";
+    }
+
+    @GetMapping("/reset-password")
+    public String showResetPasswordPage(@RequestParam String token, Model model) {
+        model.addAttribute("token", token);
+        return "reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String processResetPassword(@RequestParam String token,
+                                       @RequestParam String newPassword,
+                                       Model model) {
+        boolean success = userServ.resetPassword(token, newPassword);
+        if (success) {
+            model.addAttribute("success", true);
+        } else {
+            model.addAttribute("error", true);
+            model.addAttribute("token", token);
+        }
+        return "reset-password";
+    }
+
     // ─── Authenticated Dashboard ──────────────────────────────────
     @GetMapping("/home")
     public String homePage(HttpSession session, Model model) {

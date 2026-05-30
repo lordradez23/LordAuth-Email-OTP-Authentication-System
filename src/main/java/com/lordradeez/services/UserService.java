@@ -2,15 +2,19 @@ package com.lordradeez.services;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.lordradeez.entities.PasswordResetToken;
 import com.lordradeez.entities.User;
 import com.lordradeez.entities.UserOtp;
+import com.lordradeez.repositories.PasswordResetTokenRepository;
 import com.lordradeez.repositories.UserOTPRepository;
 import com.lordradeez.repositories.UserRepository;
 
@@ -21,11 +25,17 @@ public class UserService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Value("${lordauth.app.base-url:http://localhost:9091}")
+    private String baseUrl;
+
     @Autowired
     UserRepository userRepo;
 
     @Autowired
     UserOTPRepository userOtpRepo;
+
+    @Autowired
+    PasswordResetTokenRepository resetTokenRepo;
 
     @Autowired
     JavaMailSender mailSender;
@@ -98,6 +108,107 @@ public class UserService {
             userRepo.save(user);
         }
         return user;
+    }
+
+    // ─── Forgot Password ──────────────────────────────────────────
+    /**
+     * Generates a UUID reset token, persists it (15-min expiry), and emails a link.
+     * Returns false if email not found.
+     */
+    public boolean initiatePasswordReset(String emailId) {
+        User user = userRepo.findByEmailId(emailId);
+        if (user == null) return false;
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken prt = new PasswordResetToken(
+                token,
+                user.getId(),
+                LocalDateTime.now().plusMinutes(15)
+        );
+        resetTokenRepo.save(prt);
+
+        String resetLink = baseUrl + "/reset-password?token=" + token;
+        sendResetEmail(user.getEmailId(), user.getName(), resetLink);
+        return true;
+    }
+
+    /**
+     * Validates the token, BCrypt-hashes the new password, saves it, marks token used.
+     * Returns false if token is invalid, expired, or already used.
+     */
+    public boolean resetPassword(String token, String newPassword) {
+        PasswordResetToken prt = resetTokenRepo.findByToken(token);
+        if (prt == null || prt.isUsed() || prt.isExpired()) return false;
+
+        User user = userRepo.findById(prt.getUserId()).orElse(null);
+        if (user == null) return false;
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
+
+        prt.setUsed(true);
+        resetTokenRepo.save(prt);
+        return true;
+    }
+
+    private void sendResetEmail(String to, String name, String resetLink) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject("LordAuth — Password Reset Request");
+            helper.setText(buildResetEmail(name, resetLink), true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send reset email: " + e.getMessage(), e);
+        }
+    }
+
+    private String buildResetEmail(String name, String resetLink) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <style>
+                body { margin:0; padding:0; background:#0a0f1e; font-family:'Segoe UI',Arial,sans-serif; }
+                .wrapper { max-width:520px; margin:40px auto; }
+                .card { background:linear-gradient(135deg,#111928,#0a0f1e); border:1px solid rgba(255,255,255,0.08); border-radius:16px; overflow:hidden; }
+                .header { background:linear-gradient(90deg,#ec4899,#a855f7); padding:32px 40px; text-align:center; }
+                .header h1 { color:#fff; margin:0; font-size:24px; font-weight:800; letter-spacing:1px; }
+                .header p  { color:rgba(255,255,255,0.8); margin:6px 0 0; font-size:13px; }
+                .body { padding:36px 40px; }
+                .greeting { color:#cbd5e1; font-size:15px; margin-bottom:20px; }
+                .btn-reset { display:block; width:fit-content; margin:20px auto; background:linear-gradient(90deg,#ec4899,#a855f7); color:#fff; text-decoration:none; padding:14px 32px; border-radius:10px; font-weight:700; font-size:15px; }
+                .note { background:rgba(239,68,68,0.1); border-left:3px solid #ef4444; border-radius:4px; padding:12px 16px; color:#fca5a5; font-size:13px; margin-top:20px; }
+                .footer { text-align:center; padding:20px 40px; border-top:1px solid rgba(255,255,255,0.06); }
+                .footer p { color:#475569; font-size:12px; margin:0; }
+                .footer strong { color:#6366f1; }
+              </style>
+            </head>
+            <body>
+              <div class="wrapper">
+                <div class="card">
+                  <div class="header">
+                    <h1>🔑 Password Reset</h1>
+                    <p>LordAuth — Anointed Security System</p>
+                  </div>
+                  <div class="body">
+                    <p class="greeting">Hello, <strong style="color:#e2e8f0">""" + name + """
+                    </strong>. We received a request to reset your password.</p>
+                    <a href="""" + resetLink + """" class="btn-reset">Reset My Password</a>
+                    <div class="note">
+                      ⚠️ This link expires in <strong>15 minutes</strong>. If you did not request this, ignore this email — your account is safe.
+                    </div>
+                  </div>
+                  <div class="footer">
+                    <p>Secured by <strong>LordAuth</strong> &mdash; Anointed: Lordradeez</p>
+                  </div>
+                </div>
+              </div>
+            </body>
+            </html>
+            """;
     }
 
     // ─── Email Sender ─────────────────────────────────────────────
