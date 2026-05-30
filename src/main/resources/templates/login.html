@@ -1,20 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-<meta charset="UTF-8">
-<title>User Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LordAuth — Sign in with email and OTP two-factor authentication.">
+    <title>LordAuth | Sign In</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<form action="/login" method = "post">
+    <div class="auth-container">
 
-<label>Email Id:</label>
-<input type = "email" name = "emailId" required="required"><br><br>
+        <div class="brand">
+            <div class="brand-icon">🛡️</div>
+            <h1>LordAuth</h1>
+            <p>Anointed Security System</p>
+        </div>
 
-<label>Password:</label>
-<input type = "password" name = "password" required="required"><br><br>
+        <h2 class="section-title">Welcome Back</h2>
+        <p class="subtitle">Sign in to receive your one-time verification code.</p>
 
-<button type = "submit">Login</button> <br><br>
+        <form action="/login" method="post" id="loginForm">
 
-</form>
+            <div class="form-group">
+                <label for="emailId">Email Address</label>
+                <input type="email" id="emailId" name="emailId"
+                       placeholder="you@example.com" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       placeholder="Your password" required autocomplete="current-password">
+            </div>
+
+            <div style="text-align:right; margin-top:-0.75rem; margin-bottom:1rem;">
+                <a href="/forgot-password" style="font-size:0.8rem; color:var(--text-secondary); text-decoration:none; transition:color 0.2s;"
+                   onmouseover="this.style.color='var(--primary-light)'"
+                   onmouseout="this.style.color='var(--text-secondary)'">
+                    Forgot password?
+                </a>
+            </div>
+
+            <button type="submit" class="btn-primary" id="loginBtn">
+                Send OTP & Continue
+            </button>
+        </form>
+
+        <div class="divider">or</div>
+
+        <div class="link-group" style="margin-top:0;">
+            Don't have an account? <a href="/">Create one</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const btn  = document.getElementById('loginBtn');
+        form.addEventListener('submit', () => {
+            btn.innerHTML = '<span class="spinner"></span> Authenticating...';
+            btn.disabled = true;
+        });
+    </script>
 </body>
 </html>

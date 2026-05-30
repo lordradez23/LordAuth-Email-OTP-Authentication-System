@@ -1,30 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-<meta charset="UTF-8">
-<title>User Registration</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LordAuth — Create your secure account with email OTP two-factor authentication.">
+    <title>LordAuth | Create Account</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <div class="auth-container">
 
-<form action="/register" method = "post">
+        <div class="brand">
+            <div class="brand-icon">🛡️</div>
+            <h1>LordAuth</h1>
+            <p>Anointed Security System</p>
+        </div>
 
-<label>Name:</label>
-<input type = "text" name = "name" required="required"><br><br>
+        <h2 class="section-title">Create Account</h2>
+        <p class="subtitle">Join the ranks. Your identity, secured.</p>
 
-<label>Phone Number:</label>
-<input type = "number" name = "phone" required="required"><br><br>
+        <form action="/register" method="post" id="registerForm">
 
-<label>Email Id:</label>
-<input type="email" name="emailId" required="required"> <br><br>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name"
+                           placeholder="John Doe" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone"
+                           placeholder="08012345678" required autocomplete="tel">
+                </div>
+            </div>
 
+            <div class="form-group">
+                <label for="emailId">Email Address</label>
+                <input type="email" id="emailId" name="emailId"
+                       placeholder="you@example.com" required autocomplete="email">
+            </div>
 
-<label>Password:</label>
-<input type = "password" name = "password" required="required"><br><br>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       placeholder="Create a strong password" required
+                       minlength="8" autocomplete="new-password">
+            </div>
 
-<button type = "submit">SignUp</button> <br><br>
+            <div class="alert" style="margin-top:0.5rem;">
+                <span>🔒</span>
+                <span>Your password is hashed with BCrypt before storage. We never see it in plain text.</span>
+            </div>
 
-</form>
+            <button type="submit" class="btn-primary" id="registerBtn">
+                Create Secure Account
+            </button>
+        </form>
 
-<a href = "/login">Already Signed up? Click here to Login</a>
+        <div class="link-group">
+            Already have an account? <a href="/login">Sign in</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const btn  = document.getElementById('registerBtn');
+        form.addEventListener('submit', () => {
+            btn.innerHTML = '<span class="spinner"></span> Creating Account...';
+            btn.disabled = true;
+        });
+    </script>
 </body>
 </html>

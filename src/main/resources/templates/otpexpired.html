@@ -1,11 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LordAuth | OTP Expired</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <div class="auth-container" style="text-align:center;">
 
-<h2> Sorry, OTP Expired! Please Try Again</h2>
+        <div class="brand">
+            <div class="brand-icon">🛡️</div>
+            <h1>LordAuth</h1>
+        </div>
+
+        <div class="status-icon icon-warning">⏱️</div>
+
+        <h2 class="section-title">OTP Expired</h2>
+        <p class="subtitle">
+            Your one-time password has expired. OTPs are valid for <strong style="color:var(--primary-light);">60 seconds</strong> for your security.
+        </p>
+
+        <div class="alert alert-warning">
+            <span>💡</span>
+            <span>You can request a fresh OTP by logging in again or using the resend option on the verification page.</span>
+        </div>
+
+        <a href="/login">
+            <button class="btn-primary" style="margin-bottom:0.75rem;">Login Again for New OTP</button>
+        </a>
+
+        <div class="link-group">
+            Need help? <a href="/forgot-password">Reset your password</a>
+        </div>
+    </div>
 </body>
 </html>
