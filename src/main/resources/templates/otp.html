@@ -1,18 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LordAuth | Verify OTP</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .otp-timer-ring {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(#6366f1 var(--progress, 100%), rgba(255,255,255,0.06) 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            position: relative;
+            transition: background 0.5s;
+        }
+        .otp-timer-ring::before {
+            content: '';
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #0f172a;
+        }
+        .otp-timer-number {
+            position: relative;
+            z-index: 1;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #818cf8;
+        }
+        .otp-timer-number.expired { color: #f87171; }
+        .resend-btn {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 0.75rem;
+            transition: all 0.2s;
+        }
+        .resend-btn:not(:disabled):hover {
+            border-color: #6366f1;
+            color: #818cf8;
+        }
+        .resend-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .status-msg {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+        }
+    </style>
 </head>
 <body>
+    <div class="auth-container">
+        <h2>Verify Identity</h2>
+        <p>Enter the 6-digit OTP sent to your registered email address.</p>
 
-<form action = "/verifyotp" method = "post">
-<label> Enter OTP:</label>
-<input type = "text" name = "otp" required> <br><br>
+        <!-- Countdown Ring -->
+        <div class="otp-timer-ring" id="timerRing">
+            <span class="otp-timer-number" id="timerDisplay">60</span>
+        </div>
 
-<button type="submit"> Verify OTP</button>
+        <!-- OTP Form -->
+        <form action="/verifyotp" method="post" id="otpForm">
+            <div class="form-group">
+                <label>One-Time Password</label>
+                <input type="text" name="otp" id="otpInput"
+                       placeholder="Enter 6-digit OTP"
+                       maxlength="6"
+                       autocomplete="one-time-code"
+                       required>
+            </div>
+            <button type="submit" class="btn-primary" id="verifyBtn">Verify Access</button>
+        </form>
 
-</form>
+        <!-- Resend Form -->
+        <form action="/resendotp" method="post" id="resendForm">
+            <button type="submit" class="resend-btn" id="resendBtn" disabled>
+                Resend OTP (available after timer expires)
+            </button>
+        </form>
+        <p class="status-msg" id="statusMsg"></p>
 
+        <div class="link-group" style="margin-top:1rem;">
+            <a href="/login">Back to Login</a>
+        </div>
+    </div>
+
+    <script>
+        let seconds = 60;
+        const ring = document.getElementById('timerRing');
+        const display = document.getElementById('timerDisplay');
+        const resendBtn = document.getElementById('resendBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        function updateRing(s) {
+            const pct = (s / 60) * 100;
+            ring.style.setProperty('--progress', pct + '%');
+            display.textContent = s;
+            if (s <= 10) {
+                display.style.color = '#f87171';
+                ring.style.background = `conic-gradient(#f87171 ${pct}%, rgba(255,255,255,0.06) 0%)`;
+            }
+        }
+
+        const timer = setInterval(() => {
+            seconds--;
+            updateRing(seconds);
+            if (seconds <= 0) {
+                clearInterval(timer);
+                display.textContent = '0';
+                display.classList.add('expired');
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Resend OTP';
+                statusMsg.textContent = 'Your OTP has expired. Request a new one.';
+            }
+        }, 1000);
+
+        // On resend, re-enable timer
+        document.getElementById('resendForm').addEventListener('submit', () => {
+            statusMsg.textContent = 'Sending new OTP...';
+        });
+    </script>
 </body>
 </html>
