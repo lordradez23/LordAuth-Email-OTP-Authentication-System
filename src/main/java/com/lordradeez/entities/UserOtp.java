@@ -13,70 +13,44 @@ import jakarta.persistence.Table;
 @Table
 public class UserOtp {
 
-		 @Id
-		 @GeneratedValue(strategy=GenerationType.IDENTITY)
-		 int otpId;
-		 
-		 @Column
-		 String otp;
-		 
-		 @Column
-		 int userId;
-		 
-		 @Column
-		 LocalDateTime createdTime;
-		 
-		 public LocalDateTime getCreatedTime() {
-			return createdTime;
-		}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int otpId;
 
-		 public void setCreatedTime(LocalDateTime createdTime) {
-			 this.createdTime = createdTime;
-		 }
+    @Column
+    private String otp;
 
-		 public UserOtp(int otpId, String otp, int userId, LocalDateTime createdTime) {
-			super();
-			this.otpId = otpId;
-			this.otp = otp;
-			this.userId = userId;
-			this.createdTime = createdTime;
-		}
+    @Column
+    private int userId;
 
-		 public UserOtp() {
-			super();
-			// TODO Auto-generated constructor stub
-		 }
+    @Column
+    private LocalDateTime createdTime;
 
-		 public UserOtp(int otpId, String otp, int userId) {
-			super();
-			this.otpId = otpId;
-			this.otp = otp;
-			this.userId = userId;
-		 }
+    @Column(nullable = false)
+    private boolean used = false;
 
-		 public int getOtpId() {
-			 return otpId;
-		 }
+    public UserOtp() {}
 
-		 public void setOtpId(int otpId) {
-			 this.otpId = otpId;
-		 }
+    public UserOtp(int otpId, String otp, int userId, LocalDateTime createdTime) {
+        this.otpId = otpId;
+        this.otp = otp;
+        this.userId = userId;
+        this.createdTime = createdTime;
+        this.used = false;
+    }
 
-		 public String getOtp() {
-			 return otp;
-		 }
+    public int getOtpId() { return otpId; }
+    public void setOtpId(int otpId) { this.otpId = otpId; }
 
-		 public void setOtp(String otp) {
-			 this.otp = otp;
-		 }
+    public String getOtp() { return otp; }
+    public void setOtp(String otp) { this.otp = otp; }
 
-		 public int getUserId() {
-			 return userId;
-		 }
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
 
-		 public void setUserId(int userId) {
-			 this.userId = userId;
-		 }
-		 
-		 
+    public LocalDateTime getCreatedTime() { return createdTime; }
+    public void setCreatedTime(LocalDateTime createdTime) { this.createdTime = createdTime; }
+
+    public boolean isUsed() { return used; }
+    public void setUsed(boolean used) { this.used = used; }
 }

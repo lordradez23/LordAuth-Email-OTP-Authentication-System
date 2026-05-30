@@ -67,10 +67,17 @@ public class UserService {
         if (userOtp == null) {
             return false;
         }
+        // Reject already-consumed OTPs (prevents replay attacks)
+        if (userOtp.isUsed()) {
+            return false;
+        }
         LocalDateTime expiryTime = userOtp.getCreatedTime().plusMinutes(1);
         if (LocalDateTime.now().isAfter(expiryTime)) {
             return false;
         }
+        // Mark the OTP as consumed so it cannot be reused
+        userOtp.setUsed(true);
+        userOtpRepo.save(userOtp);
         return true;
     }
 }
