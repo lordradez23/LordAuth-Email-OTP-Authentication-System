@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LordAuth | Account Locked</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .lock-timer {
+            font-size: 2.5rem;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            letter-spacing: 0.05em;
+            margin: 0.5rem 0 1.5rem;
+        }
+
+        .attempts-bar {
+            display: flex;
+            gap: 0.4rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .attempt-dot {
+            width: 28px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(239, 68, 68, 0.8);
+            animation: pulseBar 1.8s infinite;
+        }
+
+        .attempt-dot:nth-child(2) { animation-delay: 0.15s; }
+        .attempt-dot:nth-child(3) { animation-delay: 0.30s; }
+        .attempt-dot:nth-child(4) { animation-delay: 0.45s; }
+        .attempt-dot:nth-child(5) { animation-delay: 0.60s; }
+
+        @keyframes pulseBar {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container" style="text-align:center;">
+
+        <div class="brand">
+            <div class="brand-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">🔒</div>
+            <h1>LordAuth</h1>
+        </div>
+
+        <h2 class="section-title">Account Locked</h2>
+        <p class="subtitle">Too many failed login attempts detected. Your account has been temporarily locked for your security.</p>
+
+        <!-- Attempt dots -->
+        <div class="attempts-bar" title="5 failed attempts">
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+        </div>
+
+        <!-- Countdown timer -->
+        <div class="lock-timer" id="lockTimer">15:00</div>
+
+        <div class="alert alert-danger" style="text-align:left;">
+            <span>🔐</span>
+            <div>
+                Your account will automatically unlock after the timer expires.<br>
+                A <strong>security alert</strong> has been sent to your registered email.
+            </div>
+        </div>
+
+        <a href="/forgot-password">
+            <button class="btn-primary" style="margin-bottom:0.75rem;">Reset Password Instead</button>
+        </a>
+        <a href="/login">
+            <button class="btn-secondary">Try Again After Unlock</button>
+        </a>
+    </div>
+
+    <script>
+        // 15-minute countdown
+        let total = 15 * 60;
+        const display = document.getElementById('lockTimer');
+
+        function tick() {
+            if (total <= 0) {
+                display.textContent = '00:00';
+                document.querySelector('.btn-secondary').textContent = 'Try Login Again';
+                return;
+            }
+            const m = String(Math.floor(total / 60)).padStart(2, '0');
+            const s = String(total % 60).padStart(2, '0');
+            display.textContent = `${m}:${s}`;
+            total--;
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    </script>
+</body>
+</html>

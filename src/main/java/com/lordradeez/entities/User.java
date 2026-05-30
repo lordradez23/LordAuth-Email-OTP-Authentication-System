@@ -27,6 +27,14 @@ public class User {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    /** Number of consecutive failed login attempts. Reset on successful login. */
+    @Column(name = "failed_attempts", nullable = false)
+    private int failedAttempts = 0;
+
+    /** If non-null and in the future, the account is temporarily locked. */
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
     // ─── Constructors ────────────────────────────────────────────
     public User() {}
 
@@ -54,6 +62,17 @@ public class User {
     public String getPassword()                { return password; }
     public void   setPassword(String password) { this.password = password; }
 
-    public LocalDateTime getLastLoginAt()                        { return lastLoginAt; }
-    public void          setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+    public LocalDateTime getLastLoginAt()                           { return lastLoginAt; }
+    public void          setLastLoginAt(LocalDateTime lastLoginAt)  { this.lastLoginAt = lastLoginAt; }
+
+    public int  getFailedAttempts()                    { return failedAttempts; }
+    public void setFailedAttempts(int failedAttempts)  { this.failedAttempts = failedAttempts; }
+
+    public LocalDateTime getLockedUntil()                        { return lockedUntil; }
+    public void          setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
+
+    /** Returns true if the account is currently within a lockout window. */
+    public boolean isLocked() {
+        return lockedUntil != null && LocalDateTime.now().isBefore(lockedUntil);
+    }
 }

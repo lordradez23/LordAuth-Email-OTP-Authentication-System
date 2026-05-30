@@ -46,14 +46,39 @@ public class UserService {
         userRepo.save(user);
     }
 
-    // ─── Login + OTP Generation ───────────────────────────────────
-    public boolean loginAndGenerateOTP(String emailId, String password) {
+    private static final int    MAX_ATTEMPTS    = 5;
+    private static final int    LOCKOUT_MINUTES = 15;
+
+    // ─── Login + OTP Generation ─────────────────────────────────────────
+    public LoginResult loginAndGenerateOTP(String emailId, String password) {
         User user = userRepo.findByEmailId(emailId);
-        if (user == null) return false;
-        if (!passwordEncoder.matches(password, user.getPassword())) return false;
+        if (user == null) return LoginResult.INVALID_CREDENTIALS;
+
+        // ─ Check lockout ───────────────────────────────────────
+        if (user.isLocked()) return LoginResult.ACCOUNT_LOCKED;
+
+        // ─ Wrong password ────────────────────────────────────
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            int attempts = user.getFailedAttempts() + 1;
+            user.setFailedAttempts(attempts);
+
+            if (attempts >= MAX_ATTEMPTS) {
+                user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCKOUT_MINUTES));
+                userRepo.save(user);
+                sendLockoutAlertEmail(user.getEmailId(), user.getName());
+                return LoginResult.ACCOUNT_LOCKED;
+            }
+
+            userRepo.save(user);
+            return LoginResult.INVALID_CREDENTIALS;
+        }
+
+        // ─ Good credentials ──────────────────────────────────
+        user.setFailedAttempts(0);
+        user.setLockedUntil(null);
+        userRepo.save(user);
 
         String otp = String.valueOf(new Random().nextInt(100000, 1000000));
-
         UserOtp userOtp = new UserOtp();
         userOtp.setOtp(otp);
         userOtp.setUserId(user.getId());
@@ -61,7 +86,7 @@ public class UserService {
         userOtpRepo.save(userOtp);
 
         sendOtpEmail(user.getEmailId(), user.getName(), otp);
-        return true;
+        return LoginResult.OTP_SENT;
     }
 
     // ─── Resend OTP ───────────────────────────────────────────────
@@ -211,7 +236,56 @@ public class UserService {
             """;
     }
 
-    // ─── Email Sender ─────────────────────────────────────────────
+    // ─── Lockout Alert Email ─────────────────────────────────────────
+    private void sendLockoutAlertEmail(String to, String name) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject("LordAuth — ⚠️ Security Alert: Account Locked");
+            helper.setText(buildLockoutEmail(name), true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            // Log but don’t bubble — lockout still applied
+            System.err.println("Lockout alert email failed: " + e.getMessage());
+        }
+    }
+
+    private String buildLockoutEmail(String name) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8">
+            <style>
+              body{margin:0;padding:0;background:#0a0f1e;font-family:'Segoe UI',Arial,sans-serif;}
+              .wrapper{max-width:520px;margin:40px auto;}
+              .card{background:linear-gradient(135deg,#1a0a0a,#0f0a1e);border:1px solid rgba(239,68,68,0.2);border-radius:16px;overflow:hidden;}
+              .header{background:linear-gradient(90deg,#ef4444,#dc2626);padding:28px 36px;text-align:center;}
+              .header h1{color:#fff;margin:0;font-size:22px;font-weight:800;}
+              .header p{color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;}
+              .body{padding:32px 36px;color:#cbd5e1;font-size:14px;}
+              .note{background:rgba(239,68,68,0.1);border-left:3px solid #ef4444;border-radius:4px;padding:12px 16px;color:#fca5a5;font-size:13px;margin:20px 0;}
+              .footer{text-align:center;padding:16px 36px;border-top:1px solid rgba(255,255,255,0.06);}
+              .footer p{color:#475569;font-size:12px;margin:0;}
+            </style></head>
+            <body><div class="wrapper"><div class="card">
+              <div class="header"><h1>⚠️ Account Locked</h1><p>LordAuth Security Alert</p></div>
+              <div class="body">
+                <p>Hello <strong style="color:#f1f5f9">""" + name + """
+                </strong>,</p>
+                <p style="margin-top:12px;">Your LordAuth account has been <strong>temporarily locked</strong> after <strong>5 consecutive failed login attempts</strong>.</p>
+                <div class="note">
+                  🔒 Your account will automatically unlock in <strong>15 minutes</strong>.<br>
+                  If this was not you, please reset your password immediately.
+                </div>
+                <p><a href="/forgot-password" style="color:#818cf8;font-weight:700;">Reset My Password</a></p>
+              </div>
+              <div class="footer"><p>Secured by <strong style="color:#6366f1;">LordAuth</strong> — Anointed: Lordradeez</p></div>
+            </div></div></body></html>
+            """;
+    }
+
+    // ─── Email Sender (OTP) ─────────────────────────────────────────
     private void sendOtpEmail(String to, String name, String otp) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

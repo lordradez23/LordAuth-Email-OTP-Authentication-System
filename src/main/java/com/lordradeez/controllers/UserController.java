@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.lordradeez.entities.User;
+import com.lordradeez.services.LoginResult;
 import com.lordradeez.services.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -41,12 +42,15 @@ public class UserController {
     public String loginUser(@RequestParam String emailId,
                             @RequestParam String password,
                             HttpSession session) {
-        boolean sent = userServ.loginAndGenerateOTP(emailId, password);
-        if (sent) {
-            session.setAttribute("pendingEmail", emailId);
-            return "otp";
+        LoginResult result = userServ.loginAndGenerateOTP(emailId, password);
+        switch (result) {
+            case OTP_SENT -> {
+                session.setAttribute("pendingEmail", emailId);
+                return "otp";
+            }
+            case ACCOUNT_LOCKED -> { return "locked"; }
+            default            -> { return "loginfail"; }
         }
-        return "loginfail";
     }
 
     // ─── OTP ──────────────────────────────────────────────────────

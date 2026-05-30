@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lordradeez.entities.User;
 import com.lordradeez.services.JwtUtil;
+import com.lordradeez.services.LoginResult;
 import com.lordradeez.services.UserService;
 
 /**
@@ -65,16 +66,17 @@ public class ApiController {
                     .body(Map.of("status", "error", "message", "emailId and password are required."));
         }
 
-        boolean sent = userService.loginAndGenerateOTP(emailId, password);
-        if (sent) {
-            return ResponseEntity.ok(Map.of(
+        LoginResult result = userService.loginAndGenerateOTP(emailId, password);
+        return switch (result) {
+            case OTP_SENT        -> ResponseEntity.ok(Map.of(
                     "status", "success",
                     "message", "OTP sent to your registered email. Valid for 60 seconds."
             ));
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            case ACCOUNT_LOCKED  -> ResponseEntity.status(423)
+                    .body(Map.of("status", "error", "message", "Account locked. Too many failed attempts. Try again in 15 minutes."));
+            default              -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("status", "error", "message", "Invalid email or password."));
-        }
+        };
     }
 
     /**
