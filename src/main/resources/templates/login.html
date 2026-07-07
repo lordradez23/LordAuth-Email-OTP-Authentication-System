@@ -27,18 +27,17 @@
                        placeholder="you@example.com" required autocomplete="email">
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password"
-                       placeholder="Your password" required autocomplete="current-password">
+            <div class="form-group" style="position: relative;">
+                <label>Password</label>
+                <input type="password" name="password" id="loginPassword" placeholder="••••••••" required>
+                <span class="password-toggle" onclick="togglePassword('loginPassword', this)">👁️</span>
             </div>
-
-            <div style="text-align:right; margin-top:-0.75rem; margin-bottom:1rem;">
-                <a href="/forgot-password" style="font-size:0.8rem; color:var(--text-secondary); text-decoration:none; transition:color 0.2s;"
-                   onmouseover="this.style.color='var(--primary-light)'"
-                   onmouseout="this.style.color='var(--text-secondary)'">
-                    Forgot password?
-                </a>
+            
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; justify-content: space-between;">
+                <label style="margin: 0; font-size: 0.85rem; font-weight: normal; color: var(--text-secondary); cursor: pointer;">
+                    <input type="checkbox" name="rememberMe" style="accent-color: var(--primary);"> Remember Me
+                </label>
+                <a href="/forgot-password" class="forgot-link">Forgot Password?</a>
             </div>
 
             <button type="submit" class="btn-primary" id="loginBtn">

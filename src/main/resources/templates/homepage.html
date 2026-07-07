@@ -208,9 +208,14 @@
     <!-- Top Nav -->
     <nav class="dashboard-nav">
         <div class="nav-brand">
-            <span>🛡️</span> LordAuth
+            <span>🛡️</span> LordAuth Dashboard
         </div>
-        <div class="session-pill">Session Active</div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a th:if="${user.role == 'ROLE_ADMIN'}" href="/admin" style="color: var(--text-secondary); text-decoration: none;">Admin Panel</a>
+            <img th:if="${user.avatarUrl != null && !user.avatarUrl.isEmpty()}" th:src="${user.avatarUrl}" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-light);">
+            <div th:unless="${user.avatarUrl != null && !user.avatarUrl.isEmpty()}" style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;" th:text="${user.name.substring(0,1)}"></div>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
     </nav>
 
     <div class="dashboard-container">
@@ -275,10 +280,94 @@
 
         </div>
 
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <h1 th:text="'Welcome back, ' + ${user.name} + '!'">Welcome back, User!</h1>
+            <p>You have successfully authenticated via LordAuth OTP.</p>
+            <div th:if="${successMsg}" style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #34d399; padding: 0.8rem; border-radius: 6px; margin-top: 1rem;">
+                <p th:text="${successMsg}" style="margin: 0;"></p>
+            </div>
+            <div th:if="${errorMsg}" style="background: rgba(239,68,68,0.1); border: 1px solid #ef4444; color: #f87171; padding: 0.8rem; border-radius: 6px; margin-top: 1rem;">
+                <p th:text="${errorMsg}" style="margin: 0;"></p>
+            </div>
+        </div>
+
+        <!-- Profile Information Form -->
+        <div class="actions-section" style="margin-bottom: 1.25rem; flex-direction: column; align-items: flex-start;">
+            <h3 style="margin-top: 0; color: var(--text);">Profile Details</h3>
+            <form action="/update-profile" method="post" style="width: 100%; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label for="name" style="display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: var(--text-secondary);">Full Name</label>
+                    <input type="text" id="name" name="name" th:value="${user.name}" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text);">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label for="phone" style="display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: var(--text-secondary);">Phone Number</label>
+                    <input type="number" id="phone" name="phone" th:value="${user.phone}" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text);">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label for="avatarUrl" style="display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: var(--text-secondary);">Avatar Image URL (optional)</label>
+                    <input type="url" id="avatarUrl" name="avatarUrl" th:value="${user.avatarUrl}" placeholder="https://example.com/avatar.png" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text);">
+                </div>
+                <button type="submit" style="padding: 0.7rem 1.4rem; border-radius: 6px; background: linear-gradient(90deg, var(--primary), var(--secondary)); color: white; border: none; font-weight: bold; cursor: pointer;">Update Profile</button>
+            </form>
+        </div>
+
+        <!-- Change Password Form -->
+        <div class="actions-section" style="margin-bottom: 1.25rem; flex-direction: column; align-items: flex-start;">
+            <h3 style="margin-top: 0; color: var(--text);">Change Password</h3>
+            <form action="/change-password" method="post" style="width: 100%; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label for="oldPassword" style="display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: var(--text-secondary);">Current Password</label>
+                    <input type="password" id="oldPassword" name="oldPassword" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text);">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label for="newPassword" style="display: block; font-size: 0.8rem; margin-bottom: 0.4rem; color: var(--text-secondary);">New Password</label>
+                    <input type="password" id="newPassword" name="newPassword" required style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text);">
+                </div>
+                <button type="submit" style="padding: 0.7rem 1.4rem; border-radius: 6px; background: linear-gradient(90deg, #10b981, #34d399); color: white; border: none; font-weight: bold; cursor: pointer;">Change Password</button>
+            </form>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="actions-section" style="margin-bottom: 1.25rem; flex-direction: column; align-items: flex-start; border-color: rgba(239,68,68,0.3);">
+            <h3 style="margin-top: 0; color: #f87171;">Danger Zone</h3>
+            <p style="margin-bottom: 1rem; color: var(--text-secondary);">Once you delete your account, there is no going back. Please be certain.</p>
+            <form action="/delete-account" method="post" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
+                <button type="submit" style="padding: 0.7rem 1.4rem; border-radius: 6px; background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.3); font-weight: bold; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">Delete Account</button>
+            </form>
+        </div>
+
         <!-- Action Bar -->
-        <div class="actions-section">
+        <div class="actions-section" style="margin-bottom: 1.25rem;">
             <p>🔒 Your session is protected. All credentials are BCrypt-hashed and OTP-verified.</p>
-            <a href="/logout" class="logout-btn">🚪 Sign Out Securely</a>
+        </div>
+
+        <!-- Security Log -->
+        <div class="actions-section" style="flex-direction: column; align-items: flex-start;">
+            <h3 style="margin-top: 0; color: var(--text);">Recent Activity</h3>
+            <div style="width: 100%; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; color: var(--text); font-size: 0.85rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left;">
+                            <th style="padding: 0.75rem 0; color: var(--text-secondary);">Date & Time</th>
+                            <th style="padding: 0.75rem 0; color: var(--text-secondary);">IP Address</th>
+                            <th style="padding: 0.75rem 0; color: var(--text-secondary);">Outcome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="log, iterStat : ${auditLogs}" th:if="${iterStat.index < 10}" style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                            <td style="padding: 0.75rem 0;" th:text="${#temporals.format(log.timestamp, 'dd MMM yyyy, HH:mm')}"></td>
+                            <td style="padding: 0.75rem 0;" th:text="${log.ipAddress != null ? log.ipAddress : 'Unknown'}"></td>
+                            <td style="padding: 0.75rem 0;">
+                                <span th:if="${log.outcome.name() == 'SUCCESS'}" style="color: #34d399;">Success</span>
+                                <span th:if="${log.outcome.name() == 'FAIL'}" style="color: #f87171;">Failed</span>
+                                <span th:if="${log.outcome.name() == 'LOCKED'}" style="color: #fbbf24;">Locked Out</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p th:if="${auditLogs == null || auditLogs.isEmpty()}" style="color: var(--text-secondary); font-size: 0.85rem; padding-top: 1rem;">No recent activity found.</p>
+            </div>
         </div>
 
     </div>

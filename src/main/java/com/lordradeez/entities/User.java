@@ -35,6 +35,21 @@ public class User {
     @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
 
+    @Column(name = "role", nullable = false)
+    private String role = "ROLE_USER";
+
+    @Column(name = "last_otp_request")
+    private LocalDateTime lastOtpRequest;
+
+    @Column(name = "last_ip_address")
+    private String lastIpAddress;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
+    @Column(name = "is_email_verified", nullable = false)
+    private boolean isEmailVerified = false;
+
     // ─── Constructors ────────────────────────────────────────────
     public User() {}
 
@@ -44,6 +59,7 @@ public class User {
         this.phone    = phone;
         this.emailId  = emailId;
         this.password = password;
+        this.role     = "ROLE_USER";
     }
 
     // ─── Getters & Setters ────────────────────────────────────────
@@ -70,6 +86,21 @@ public class User {
 
     public LocalDateTime getLockedUntil()                        { return lockedUntil; }
     public void          setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public LocalDateTime getLastOtpRequest() { return lastOtpRequest; }
+    public void setLastOtpRequest(LocalDateTime lastOtpRequest) { this.lastOtpRequest = lastOtpRequest; }
+
+    public String getLastIpAddress() { return lastIpAddress; }
+    public void setLastIpAddress(String lastIpAddress) { this.lastIpAddress = lastIpAddress; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    public boolean isEmailVerified() { return isEmailVerified; }
+    public void setEmailVerified(boolean emailVerified) { isEmailVerified = emailVerified; }
 
     /** Returns true if the account is currently within a lockout window. */
     public boolean isLocked() {

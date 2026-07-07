@@ -68,6 +68,14 @@
         <h2>Verify Identity</h2>
         <p>Enter the 6-digit OTP sent to your registered email address.</p>
 
+        <!-- Messages -->
+        <div th:if="${success}" style="background: rgba(16,185,129,0.1); border: 1px solid #10b981; color: #34d399; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; text-align: center; font-size: 0.85rem;">
+            <p th:text="${success}" style="margin: 0;"></p>
+        </div>
+        <div th:if="${error}" style="background: rgba(239,68,68,0.1); border: 1px solid #ef4444; color: #f87171; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; text-align: center; font-size: 0.85rem;">
+            <p th:text="${error}" style="margin: 0;"></p>
+        </div>
+
         <!-- Countdown Ring -->
         <div class="otp-timer-ring" id="timerRing">
             <span class="otp-timer-number" id="timerDisplay">60</span>

@@ -22,13 +22,18 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, boolean rememberMe) {
+        long duration = rememberMe ? 1000L * 60 * 60 * 24 * 7 : EXPIRATION_MS; // 7 days or 1 day
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .expiration(new Date(System.currentTimeMillis() + duration))
                 .signWith(getKey())
                 .compact();
+    }
+
+    public String generateToken(String email) {
+        return generateToken(email, false);
     }
 
     public String extractEmail(String token) {

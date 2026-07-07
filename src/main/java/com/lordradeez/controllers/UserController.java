@@ -27,8 +27,24 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute User user) {
-        userServ.register(user);
+    public String registerUser(@ModelAttribute User user, Model model) {
+        UserService.RegistrationResult result = userServ.registerUser(user);
+        if (result == UserService.RegistrationResult.EMAIL_ALREADY_EXISTS) {
+            model.addAttribute("error", "Email already registered!");
+            return "index";
+        }
+        model.addAttribute("msg", "Registration successful! Please check your email to verify your account.");
+        return "login";
+    }
+
+    @GetMapping("/verify-email")
+    public String verifyEmail(@RequestParam String token, Model model) {
+        boolean success = userServ.verifyEmail(token);
+        if (success) {
+            model.addAttribute("msg", "Email verified successfully! You can now log in.");
+        } else {
+            model.addAttribute("error", "Invalid or expired verification link.");
+        }
         return "login";
     }
 
@@ -41,24 +57,48 @@ public class UserController {
     @PostMapping("/login")
     public String loginUser(@RequestParam String emailId,
                             @RequestParam String password,
-                            HttpSession session) {
+                            @RequestParam(required = false) String rememberMe,
+                            HttpSession session,
+                            Model model) {
         LoginResult result = userServ.loginAndGenerateOTP(emailId, password);
         switch (result) {
             case OTP_SENT -> {
                 session.setAttribute("pendingEmail", emailId);
+                if (rememberMe != null) {
+                    session.setAttribute("rememberMe", true);
+                }
                 return "otp";
             }
-            case ACCOUNT_LOCKED -> { return "locked"; }
-            default            -> { return "loginfail"; }
+            case ACCOUNT_LOCKED -> {
+                model.addAttribute("error", "Account locked due to too many failed attempts.");
+            }
+            case EMAIL_NOT_VERIFIED -> {
+                model.addAttribute("error", "Please verify your email before logging in.");
+            }
+            case INVALID_CREDENTIALS -> {
+                model.addAttribute("error", "Invalid credentials.");
+            }
         }
+        return "loginfail";
     }
 
     // ─── OTP ──────────────────────────────────────────────────────
+    @GetMapping("/otp")
+    public String displayOtpPage(HttpSession session) {
+        if (session.getAttribute("pendingEmail") == null) return "redirect:/login";
+        return "otp";
+    }
+
     @PostMapping("/resendotp")
-    public String resendOtp(HttpSession session) {
+    public String resendOtp(HttpSession session, Model model) {
         String emailId = (String) session.getAttribute("pendingEmail");
         if (emailId != null) {
-            userServ.resendOtp(emailId);
+            boolean success = userServ.resendOtp(emailId);
+            if (!success) {
+                model.addAttribute("error", "Please wait 30 seconds before requesting another OTP.");
+            } else {
+                model.addAttribute("success", "OTP sent successfully.");
+            }
         }
         return "otp";
     }
@@ -66,15 +106,24 @@ public class UserController {
     @PostMapping("/verifyotp")
     public String verifyOTP(@RequestParam String otp,
                             HttpSession session,
+                            jakarta.servlet.http.HttpServletRequest request,
                             Model model) {
-        User authenticatedUser = userServ.verifyOtp(otp);
+        String ipAddress = request.getRemoteAddr();
+        User authenticatedUser = userServ.verifyOtp(otp, ipAddress);
         if (authenticatedUser != null) {
+            // Check remember me
+            if (Boolean.TRUE.equals(session.getAttribute("rememberMe"))) {
+                session.setMaxInactiveInterval(7 * 24 * 60 * 60); // 7 days
+            } else {
+                session.setMaxInactiveInterval(30 * 60); // 30 minutes
+            }
+            
             // Store authenticated user in session
             session.removeAttribute("pendingEmail");
+            session.removeAttribute("rememberMe");
             session.setAttribute("authUser", authenticatedUser);
             // Pass user to homepage model
-            model.addAttribute("user", authenticatedUser);
-            return "homepage";
+            return renderHomepage(authenticatedUser, model);
         }
         return "loginfail";
     }
@@ -114,12 +163,64 @@ public class UserController {
     }
 
     // ─── Authenticated Dashboard ──────────────────────────────────
+    private String renderHomepage(User user, Model model) {
+        model.addAttribute("user", user);
+        model.addAttribute("auditLogs", userServ.getUserAuditLogs(user.getEmailId()));
+        return "homepage";
+    }
+
     @GetMapping("/home")
     public String homePage(HttpSession session, Model model) {
         User user = (User) session.getAttribute("authUser");
         if (user == null) return "redirect:/login";
-        model.addAttribute("user", user);
+        return renderHomepage(user, model);
+    }
+
+    @PostMapping("/update-profile")
+    public String updateProfile(@RequestParam String name, 
+                                @RequestParam int phone,
+                                @RequestParam(required = false) String avatarUrl, 
+                                HttpSession session, 
+                                Model model) {
+        User user = (User) session.getAttribute("authUser");
+        if (user == null) return "redirect:/login";
+
+        User updated = userServ.updateProfile(user.getId(), name, phone, avatarUrl);
+        if (updated != null) {
+            session.setAttribute("authUser", updated);
+            model.addAttribute("successMsg", "Profile updated successfully!");
+            return renderHomepage(updated, model);
+        } else {
+            model.addAttribute("errorMsg", "Failed to update profile.");
+            return renderHomepage(user, model);
+        }
+    }
+
+    @PostMapping("/change-password")
+    public String changePassword(@RequestParam String oldPassword,
+                                 @RequestParam String newPassword,
+                                 HttpSession session,
+                                 Model model) {
+        User user = (User) session.getAttribute("authUser");
+        if (user == null) return "redirect:/login";
+
+        boolean success = userServ.changePassword(user.getId(), oldPassword, newPassword);
+        if (success) {
+            model.addAttribute("successMsg", "Password changed successfully!");
+        } else {
+            model.addAttribute("errorMsg", "Incorrect old password.");
+        }
         return "homepage";
+    }
+
+    @PostMapping("/delete-account")
+    public String deleteAccount(HttpSession session) {
+        User user = (User) session.getAttribute("authUser");
+        if (user != null) {
+            userServ.deleteAccount(user.getId());
+            session.invalidate();
+        }
+        return "redirect:/login";
     }
 
     // ─── Logout ───────────────────────────────────────────────────

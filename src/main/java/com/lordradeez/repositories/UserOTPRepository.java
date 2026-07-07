@@ -6,4 +6,7 @@ import com.lordradeez.entities.UserOtp;
 
 public interface UserOTPRepository extends JpaRepository <UserOtp, Integer>{
 	UserOtp findByOtp(String otp);
+	
+	@org.springframework.transaction.annotation.Transactional
+	void deleteByUserId(int userId);
 }
