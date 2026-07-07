@@ -4,7 +4,7 @@
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* ─── Design Tokens ─────────────────────────────────────────── */
+/* ─── Design Tokens — Dark Mode (default) ───────────────────── */
 :root {
     --primary:        #6366f1;
     --primary-light:  #818cf8;
@@ -27,6 +27,50 @@
     --shadow:         0 25px 60px -12px rgba(0, 0, 0, 0.7);
     --glow-primary:   0 0 30px rgba(99, 102, 241, 0.25);
     --transition:     all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Design Tokens — Light Mode ────────────────────────────── */
+[data-theme="light"] {
+    --primary:        #4f46e5;
+    --primary-light:  #6366f1;
+    --secondary:      #9333ea;
+    --accent:         #db2777;
+    --success:        #059669;
+    --warning:        #d97706;
+    --danger:         #dc2626;
+    --bg:             #f8fafc;
+    --bg-card:        rgba(255, 255, 255, 0.9);
+    --glass-border:   rgba(0, 0, 0, 0.08);
+    --glass-hover:    rgba(0, 0, 0, 0.03);
+    --text:           #0f172a;
+    --text-secondary: #475569;
+    --text-dim:       #94a3b8;
+    --shadow:         0 25px 60px -12px rgba(0, 0, 0, 0.15);
+    --glow-primary:   0 0 30px rgba(99, 102, 241, 0.12);
+}
+
+[data-theme="light"] body {
+    background-image:
+        radial-gradient(ellipse 80% 50% at 20% -20%, rgba(99, 102, 241, 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(168, 85, 247, 0.06) 0%, transparent 60%);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 0.35rem 0.65rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+    line-height: 1;
+}
+.theme-toggle:hover {
+    border-color: var(--primary-light);
+    color: var(--primary-light);
+    background: rgba(99,102,241,0.08);
 }
 
 /* ─── Reset ──────────────────────────────────────────────────── */

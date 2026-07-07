@@ -212,6 +212,7 @@
         </div>
         <div style="display: flex; align-items: center; gap: 1rem;">
             <a th:if="${user.role == 'ROLE_ADMIN'}" href="/admin" style="color: var(--text-secondary); text-decoration: none;">Admin Panel</a>
+            <button class="theme-toggle" id="themeToggle" title="Toggle Light/Dark Mode" onclick="toggleTheme()">🌙</button>
             <img th:if="${user.avatarUrl != null && !user.avatarUrl.isEmpty()}" th:src="${user.avatarUrl}" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-light);">
             <div th:unless="${user.avatarUrl != null && !user.avatarUrl.isEmpty()}" style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;" th:text="${user.name.substring(0,1)}"></div>
             <a href="/logout" class="btn-logout">Logout</a>
@@ -374,6 +375,29 @@
         </div>
 
     </div>
+    <script>
+        // ─── Theme Toggle ───────────────────────────────────────────
+        const THEME_KEY = 'lordauth-theme';
+        const toggleBtn = document.getElementById('themeToggle');
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            if (toggleBtn) toggleBtn.textContent = theme === 'light' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem(THEME_KEY, next);
+            applyTheme(next);
+        }
+
+        // Apply saved preference on page load
+        (function() {
+            const saved = localStorage.getItem(THEME_KEY) || 'dark';
+            applyTheme(saved);
+        })();
+    </script>
 
 </body>
 </html>
