@@ -176,6 +176,45 @@ public class UserController {
         return renderHomepage(user, model);
     }
 
+    @GetMapping("/export-data")
+    public jakarta.servlet.http.HttpServletResponse exportData(
+            HttpSession session,
+            jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        User user = (User) session.getAttribute("authUser");
+        if (user == null) {
+            response.sendRedirect("/login");
+            return response;
+        }
+
+        java.util.List<com.lordradeez.entities.LoginAuditLog> logs = userServ.getUserAuditLogs(user.getEmailId());
+        StringBuilder json = new StringBuilder();
+        json.append("{\n");
+        json.append("  \"profile\": {\n");
+        json.append("    \"id\": ").append(user.getId()).append(",\n");
+        json.append("    \"name\": \"").append(user.getName()).append("\",\n");
+        json.append("    \"email\": \"").append(user.getEmailId()).append("\",\n");
+        json.append("    \"phone\": ").append(user.getPhone()).append(",\n");
+        json.append("    \"role\": \"").append(user.getRole()).append("\",\n");
+        json.append("    \"emailVerified\": ").append(user.isEmailVerified()).append("\n");
+        json.append("  },\n");
+        json.append("  \"loginHistory\": [\n");
+        for (int i = 0; i < logs.size(); i++) {
+            com.lordradeez.entities.LoginAuditLog log = logs.get(i);
+            json.append("    {\n");
+            json.append("      \"timestamp\": \"").append(log.getTimestamp()).append("\",\n");
+            json.append("      \"ipAddress\": \"").append(log.getIpAddress() != null ? log.getIpAddress() : "Unknown").append("\",\n");
+            json.append("      \"outcome\": \"").append(log.getOutcome()).append("\"\n");
+            json.append("    }").append(i < logs.size() - 1 ? "," : "").append("\n");
+        }
+        json.append("  ]\n");
+        json.append("}\n");
+
+        response.setContentType("application/json");
+        response.setHeader("Content-Disposition", "attachment; filename=\"lordauth-data-export.json\"");
+        response.getWriter().write(json.toString());
+        return response;
+    }
+
     @PostMapping("/update-profile")
     public String updateProfile(@RequestParam String name, 
                                 @RequestParam int phone,

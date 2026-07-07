@@ -331,10 +331,13 @@
         <!-- Danger Zone -->
         <div class="actions-section" style="margin-bottom: 1.25rem; flex-direction: column; align-items: flex-start; border-color: rgba(239,68,68,0.3);">
             <h3 style="margin-top: 0; color: #f87171;">Danger Zone</h3>
-            <p style="margin-bottom: 1rem; color: var(--text-secondary);">Once you delete your account, there is no going back. Please be certain.</p>
-            <form action="/delete-account" method="post" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
-                <button type="submit" style="padding: 0.7rem 1.4rem; border-radius: 6px; background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.3); font-weight: bold; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">Delete Account</button>
-            </form>
+            <p style="margin-bottom: 1rem; color: var(--text-secondary);">Manage your data and account status.</p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="/export-data" style="display: inline-block; padding: 0.7rem 1.4rem; border-radius: 6px; background: rgba(99,102,241,0.1); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); font-weight: bold; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'">⬇️ Download My Data</a>
+                <form action="/delete-account" method="post" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
+                    <button type="submit" style="padding: 0.7rem 1.4rem; border-radius: 6px; background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.3); font-weight: bold; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">🗑️ Delete Account</button>
+                </form>
+            </div>
         </div>
 
         <!-- Action Bar -->
