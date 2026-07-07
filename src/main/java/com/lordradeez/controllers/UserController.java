@@ -122,7 +122,12 @@ public class UserController {
             session.removeAttribute("pendingEmail");
             session.removeAttribute("rememberMe");
             session.setAttribute("authUser", authenticatedUser);
-            // Pass user to homepage model
+            // If admin forced a password reset, redirect immediately
+            if (authenticatedUser.isForcePasswordReset()) {
+                model.addAttribute("user", authenticatedUser);
+                model.addAttribute("forceResetMsg", "An administrator has required you to change your password before continuing.");
+                return "change-password";
+            }
             return renderHomepage(authenticatedUser, model);
         }
         return "loginfail";
@@ -245,11 +250,17 @@ public class UserController {
 
         boolean success = userServ.changePassword(user.getId(), oldPassword, newPassword);
         if (success) {
+            // Clear forced reset flag if set
+            if (user.isForcePasswordReset()) {
+                userServ.setForcePasswordReset(user.getId(), false);
+                user.setForcePasswordReset(false);
+                session.setAttribute("authUser", user);
+            }
             model.addAttribute("successMsg", "Password changed successfully!");
         } else {
             model.addAttribute("errorMsg", "Incorrect old password.");
         }
-        return "homepage";
+        return renderHomepage(user, model);
     }
 
     @PostMapping("/delete-account")

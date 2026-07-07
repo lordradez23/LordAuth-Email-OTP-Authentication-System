@@ -136,6 +136,16 @@ public class UserService {
         return userRepo.findAll();
     }
 
+    public boolean setForcePasswordReset(int userId, boolean value) {
+        User user = userRepo.findById(userId).orElse(null);
+        if (user != null) {
+            user.setForcePasswordReset(value);
+            userRepo.save(user);
+            return true;
+        }
+        return false;
+    }
+
     public java.util.List<LoginAuditLog> getUserAuditLogs(String email) {
         return auditRepo.findByEmailOrderByTimestampDesc(email);
     }

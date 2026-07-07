@@ -46,4 +46,13 @@ public class AdminController {
         }
         return "redirect:/admin";
     }
+
+    @org.springframework.web.bind.annotation.PostMapping("/admin/force-reset")
+    public String forcePasswordReset(@org.springframework.web.bind.annotation.RequestParam int userId, HttpSession session) {
+        User user = (User) session.getAttribute("authUser");
+        if (user != null && "ROLE_ADMIN".equals(user.getRole())) {
+            userService.setForcePasswordReset(userId, true);
+        }
+        return "redirect:/admin";
+    }
 }

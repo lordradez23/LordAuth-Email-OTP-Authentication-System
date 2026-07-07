@@ -50,6 +50,9 @@ public class User {
     @Column(name = "is_email_verified", nullable = false)
     private boolean isEmailVerified = false;
 
+    @Column(name = "force_password_reset", nullable = false)
+    private boolean forcePasswordReset = false;
+
     // ─── Constructors ────────────────────────────────────────────
     public User() {}
 
@@ -101,6 +104,9 @@ public class User {
 
     public boolean isEmailVerified() { return isEmailVerified; }
     public void setEmailVerified(boolean emailVerified) { isEmailVerified = emailVerified; }
+
+    public boolean isForcePasswordReset() { return forcePasswordReset; }
+    public void setForcePasswordReset(boolean forcePasswordReset) { this.forcePasswordReset = forcePasswordReset; }
 
     /** Returns true if the account is currently within a lockout window. */
     public boolean isLocked() {

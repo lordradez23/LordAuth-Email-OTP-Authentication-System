@@ -67,6 +67,10 @@
                                 <input type="hidden" name="userId" th:value="${u.id}"/>
                                 <button type="submit" style="padding: 0.2rem 0.5rem; background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.5); border-radius: 4px; cursor: pointer; font-size: 0.75rem;">Unlock</button>
                             </form>
+                            <form th:if="${u.id != user.id}" action="/admin/force-reset" method="post" style="display:inline; margin-left: 4px;">
+                                <input type="hidden" name="userId" th:value="${u.id}"/>
+                                <button type="submit" style="padding: 0.2rem 0.5rem; background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); border-radius: 4px; cursor: pointer; font-size: 0.75rem;" th:title="${u.forcePasswordReset ? 'Reset already flagged' : 'Force password reset on next login'}">⚠️ Force Reset</button>
+                            </form>
                         </td>
                     </tr>
                 </tbody>
